@@ -1,27 +1,31 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Install system dependencies for OpenCV
+# Install system dependencies for OpenCV on Debian 13 (Trixie)
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    build-essential \
+    libgl1 \
     libglib2.0-0 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user (required by HF Spaces)
+# Set up a new user named "user" with user ID 1000
 RUN useradd -m -u 1000 user
 USER user
-ENV PATH="/home/user/.local/bin:$PATH"
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
 
-WORKDIR /app
+WORKDIR $HOME/app
 
-# Copy and install Python dependencies
+# Copy and install requirements
 COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy the rest of the application files
 COPY --chown=user . .
 
-# HF Spaces requires port 7860
+# Expose the HF default app port
 EXPOSE 7860
 
+# Command to run the application
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
