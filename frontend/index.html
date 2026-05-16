@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionarySynth - Sketch → AI Fashion</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           CSS VARIABLES & RESET
+           ========================================================================== */
+        :root {
+            --bg-color: #0a0a0a;
+            --surface-color: #1a1a1a;
+            --gold: #c9a84c;
+            --gold-hover: #b3933e;
+            --text-main: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --border-color: #333333;
+            --error-color: #ff4d4d;
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ==========================================================================
+           HEADER STYLES
+           ========================================================================== */
+        header {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ==========================================================================
+           MAIN LAYOUT
+           ========================================================================== */
+        main {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            width: 100%;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--gold);
+            text-align: center;
+        }
+
+        /* ==========================================================================
+           UPLOAD AREA
+           ========================================================================== */
+        .upload-container {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            background-color: var(--surface-color);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            margin-bottom: 2.5rem;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-container:hover, .upload-container.dragover {
+            border-color: var(--gold);
+            background-color: rgba(201, 168, 76, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .preview-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        #sketchPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 1rem;
+        }
+
+        .change-image-btn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .change-image-btn:hover {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: var(--bg-color);
+        }
+
+        /* ==========================================================================
+           CONTROLS (STYLE & SKIN TONE)
+           ========================================================================== */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-label {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        /* Dropdown */
+        .style-select {
+            background-color: var(--surface-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23c9a84c%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem top 50%;
+            background-size: 0.65rem auto;
+            transition: var(--transition);
+        }
+
+        .style-select:focus, .style-select:hover {
+            border-color: var(--gold);
+        }
+
+        /* Skin Tone Buttons */
+        .skin-tone-selector {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .skin-tone-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .skin-tone-btn.selected {
+            border-color: var(--gold);
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(201, 168, 76, 0.3);
+        }
+
+        .skin-tone-btn::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .skin-tone-btn:hover::after, .skin-tone-btn.selected::after {
+            opacity: 1;
+            color: var(--text-main);
+        }
+
+        .skin-fair { background-color: #fce2c4; }
+        .skin-medium { background-color: #d19a66; }
+        .skin-dark { background-color: #5c3a21; }
+
+        /* ==========================================================================
+           GENERATE BUTTON & STATES
+           ========================================================================== */
+        .generate-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background-color: var(--gold);
+            color: var(--bg-color);
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 2rem;
+        }
+
+        .generate-btn:hover {
+            background-color: var(--gold-hover);
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            background-color: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status Messages */
+        .status-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading {
+            display: none;
+            color: var(--gold);
+            font-size: 1.1rem;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(201, 168, 76, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--gold);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            color: var(--error-color);
+            background-color: rgba(255, 77, 77, 0.1);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--error-color);
+            width: 100%;
+        }
+
+        /* ==========================================================================
+           RESULTS SECTION
+           ========================================================================== */
+        .results-section {
+            display: none;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-card {
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .result-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+        }
+
+        .result-img-wrapper {
+            width: 100%;
+            padding-top: 100%; /* 1:1 Aspect Ratio */
+            position: relative;
+        }
+
+        .result-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .result-actions {
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .download-btn {
+            background-color: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background-color: var(--gold);
+            color: var(--bg-color);
+        }
+
+        /* ==========================================================================
+           RESPONSIVE DESIGN
+           ========================================================================== */
+        @media (max-width: 600px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+         HEADER
+         ========================================================================== -->
+    <header>
+        <div class="logo">VisionarySynth</div>
+        <div class="tagline">Sketch &rarr; AI Fashion</div>
+    </header>
+
+    <!-- ==========================================================================
+         MAIN CONTENT
+         ========================================================================== -->
+    <main>
+        
+        <!-- Sketch Upload Area -->
+        <h2 class="section-title">Upload Your Sketch</h2>
+        <div class="upload-container" id="uploadContainer">
+            <div id="uploadPrompt">
+                <div class="upload-icon">☁️</div>
+                <div class="upload-text">Click to upload or drag and drop</div>
+                <div class="upload-subtext">PNG, JPG, JPEG (Max 5MB)</div>
+            </div>
+            
+            <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg">
+            
+            <div class="preview-container" id="previewContainer">
+                <img id="sketchPreview" src="" alt="Sketch Preview">
+                <button class="change-image-btn" id="changeImageBtn">Change Sketch</button>
+            </div>
+        </div>
+
+        <!-- Options: Style & Skin Tone -->
+        <div class="controls-grid">
+            <div class="control-group">
+                <div class="control-label">Fashion Style</div>
+                <select class="style-select" id="styleSelect">
+                    <option value="casual">Casual</option>
+                    <option value="formal">Formal</option>
+                    <option value="ethnic">Ethnic</option>
+                    <option value="sportswear">Sportswear</option>
+                    <option value="streetwear">Streetwear</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <div class="control-label">Skin Tone</div>
+                <div class="skin-tone-selector" id="skinToneSelector">
+                    <div class="skin-tone-btn skin-fair selected" data-value="fair" data-label="Fair"></div>
+                    <div class="skin-tone-btn skin-medium" data-value="medium" data-label="Medium"></div>
+                    <div class="skin-tone-btn skin-dark" data-value="dark" data-label="Dark"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="generate-btn" id="generateBtn">Generate Fashion</button>
+
+        <!-- Status Area (Loading & Errors) -->
+        <div class="status-container">
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <span>AI is generating your fashion variants... (This may take a few minutes)</span>
+            </div>
+            <div class="error-message" id="errorMessage">
+                Something went wrong. Please try again.
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="results-section" id="resultsSection">
+            <h2 class="section-title">Generated Designs</h2>
+            <div class="results-grid" id="resultsGrid">
+                <!-- Result cards will be injected here by JavaScript -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ==========================================================================
+         JAVASCRIPT LOGIC
+         ========================================================================== -->
+    <script>
+        /**
+         * CONFIGURATION
+         * Change this URL to your deployed Render backend URL.
+         * Example: "https://visionarysynth-backend.onrender.com"
+         */
+        const API_URL = "YOUR_RENDER_URL_HERE"; 
+
+        // DOM Elements
+        const uploadContainer = document.getElementById('uploadContainer');
+        const fileInput = document.getElementById('fileInput');
+        const uploadPrompt = document.getElementById('uploadPrompt');
+        const previewContainer = document.getElementById('previewContainer');
+        const sketchPreview = document.getElementById('sketchPreview');
+        const changeImageBtn = document.getElementById('changeImageBtn');
+        
+        const styleSelect = document.getElementById('styleSelect');
+        const skinToneBtns = document.querySelectorAll('.skin-tone-btn');
+        
+        const generateBtn = document.getElementById('generateBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsGrid = document.getElementById('resultsGrid');
+
+        // State Variables
+        let currentSketchBase64 = null;
+        let selectedSkinTone = 'fair'; // Default matches the HTML 'selected' class
+
+        // ==========================================================================
+        // 1. SKIN TONE SELECTION LOGIC
+        // ==========================================================================
+        skinToneBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove selected class from all
+                skinToneBtns.forEach(b => b.classList.remove('selected'));
+                // Add to clicked
+                btn.classList.add('selected');
+                // Update state
+                selectedSkinTone = btn.getAttribute('data-value');
+            });
+        });
+
+        // ==========================================================================
+        // 2. IMAGE UPLOAD & DRAG/DROP LOGIC
+        // ==========================================================================
+        
+        // Trigger file input on container click
+        uploadPrompt.addEventListener('click', () => fileInput.click());
+        
+        // Change image button
+        changeImageBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent container click event
+            fileInput.click();
+        });
+
+        // Handle file selection from input
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                processFile(this.files[0]);
+            }
+        });
+
+        // Drag and Drop Events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadContainer.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadContainer.addEventListener(eventName, () => {
+                uploadContainer.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadContainer.addEventListener(eventName, () => {
+                uploadContainer.classList.remove('dragover');
+            }, false);
+        });
+
+        uploadContainer.addEventListener('drop', function(e) {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            if (files && files[0]) {
+                processFile(files[0]);
+            }
+        });
+
+        // Read file and set base64 preview
+        function processFile(file) {
+            // Check if file is an image
+            if (!file.type.match('image.*')) {
+                showError("Please upload a valid image file (PNG, JPG).");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // e.target.result contains the base64 data URI
+                currentSketchBase64 = e.target.result;
+                
+                // Update UI
+                sketchPreview.src = currentSketchBase64;
+                uploadPrompt.style.display = 'none';
+                previewContainer.style.display = 'block';
+                hideError();
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // ==========================================================================
+        // 3. GENERATION API CALL LOGIC
+        // ==========================================================================
+        
+        generateBtn.addEventListener('click', async () => {
+            // Validation
+            if (!currentSketchBase64) {
+                showError("Please upload a sketch first.");
+                return;
+            }
+
+            // Prepare payload
+            const payload = {
+                sketch_base64: currentSketchBase64,
+                style: styleSelect.value,
+                skin_tone: selectedSkinTone
+            };
+
+            // UI State updates
+            generateBtn.disabled = true;
+            loadingIndicator.style.display = 'flex';
+            errorMessage.style.display = 'none';
+            resultsSection.style.display = 'none';
+            resultsGrid.innerHTML = ''; // Clear previous results
+
+            try {
+                // Send request to backend
+                const response = await fetch(`${API_URL}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.detail || `Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Handle Success
+                renderResults(data.images);
+                
+            } catch (error) {
+                console.error("Generation Error:", error);
+                showError(error.message || "Something went wrong. Please try again.");
+            } finally {
+                // Reset UI state
+                generateBtn.disabled = false;
+                loadingIndicator.style.display = 'none';
+            }
+        });
+
+        // ==========================================================================
+        // 4. RENDER RESULTS LOGIC
+        // ==========================================================================
+        
+        function renderResults(imagesArray) {
+            resultsGrid.innerHTML = ''; // Ensure it's clear
+            
+            if (!imagesArray || imagesArray.length === 0) {
+                showError("The server returned no images.");
+                return;
+            }
+
+            imagesArray.forEach((base64String, index) => {
+                // Create card container
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                
+                // Format base64 string for image source (add prefix if missing)
+                const imgSrc = base64String.startsWith('data:image') 
+                    ? base64String 
+                    : `data:image/png;base64,${base64String}`;
+
+                // Inject HTML into card
+                card.innerHTML = `
+                    <div class="result-img-wrapper">
+                        <img src="${imgSrc}" class="result-img" alt="Generated Fashion ${index + 1}">
+                    </div>
+                    <div class="result-actions">
+                        <a href="${imgSrc}" download="VisionarySynth_Design_${index + 1}.png" class="download-btn">
+                            Download Design
+                        </a>
+                    </div>
+                `;
+                
+                resultsGrid.appendChild(card);
+            });
+
+            // Show the results section
+            resultsSection.style.display = 'block';
+            
+            // Smooth scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ==========================================================================
+        // 5. UTILITY FUNCTIONS
+        // ==========================================================================
+        
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.style.display = 'block';
+            // Auto hide after 5 seconds
+            setTimeout(hideError, 5000);
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>
